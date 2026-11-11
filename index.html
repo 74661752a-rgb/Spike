@@ -1,0 +1,455 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>당뇨 Cody</title><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style></head><body><title>당뇨 Cody</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
+<style>
+/* 모바일 한 화면 앱: 위 상태바 + 가운데 카드 흐름 + 아래 고정 탭바(홈·기록·바로보기) */
+:root{
+  --bg:#F3F6F5;--surface:#FFFFFF;--soft:#EEF3F2;--fg:#15201E;--muted:#4A5956;--line:#DDE6E3;
+  --accent:#0F766E;--accent-soft:#DDF2EE;--accent-ink:#0B5F58;--on-accent:#FFFFFF;
+  --warn:#8A3B0C;--warn-soft:#FDEBDC;--post:#C2410C;--band:#DDF2EE;
+  --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1615;--surface:#172120;--soft:#1D2A28;--fg:#E6EEEC;--muted:#A3B5B1;--line:#2A3836;
+  --accent:#2DB3A6;--accent-soft:#123B37;--accent-ink:#86E3D8;--on-accent:#06201D;
+  --warn:#F6B184;--warn-soft:#3A2416;--post:#F08A4B;--band:#143430;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1615;--surface:#172120;--soft:#1D2A28;--fg:#E6EEEC;--muted:#A3B5B1;--line:#2A3836;
+  --accent:#2DB3A6;--accent-soft:#123B37;--accent-ink:#86E3D8;--on-accent:#06201D;
+  --warn:#F6B184;--warn-soft:#3A2416;--post:#F08A4B;--band:#143430;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.app{max-width:480px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 calc(88px + env(safe-area-inset-bottom,0px))}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;gap:10px;padding-block:14px 10px}
+.logo{width:30px;height:30px;flex:none}
+header.top h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.4px}
+.sync{margin-left:auto;font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:999px;background:var(--soft);color:var(--muted);white-space:nowrap}
+.sync.ok{background:var(--accent-soft);color:var(--accent-ink)}
+.sub{margin:0 0 14px;font-size:13px;color:var(--muted)}
+main{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h2{margin:0;font-size:16px;font-weight:700;text-wrap:balance}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.stat .lb{font-size:12px;color:var(--muted);font-weight:500}
+.stat .v{font-size:28px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:12px;font-weight:500;color:var(--muted);margin-left:3px}
+.stat .d{font-size:11.5px;color:var(--muted)}
+.pill{align-self:flex-start;font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--soft);color:var(--muted)}
+.pill.ok{background:var(--accent-soft);color:var(--accent-ink)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+svg text{fill:var(--muted);font-family:var(--font)}
+.note{font-size:13px;color:var(--muted);margin:0}
+.empty{border:1px dashed var(--line);border-radius:14px;padding:16px;font-size:14px;color:var(--muted);background:var(--surface)}
+.check{display:flex;align-items:center;gap:12px;min-height:44px;font-size:15px}
+.check input{width:22px;height:22px;accent-color:var(--accent)}
+.check span.st{margin-left:auto;font-size:12px;color:var(--muted)}
+.bar{height:10px;background:var(--soft);border-radius:999px;overflow:hidden}
+.bar>div{height:100%;background:var(--accent);border-radius:999px}
+.box{background:var(--soft);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--muted)}
+.box b{color:var(--fg)}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700;min-width:0}
+label.f span{font-weight:500;color:var(--muted)}
+input,textarea,button{font-family:inherit}
+input[type=number],input[type=text],input[type=date],textarea{width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:16px;background:var(--surface);color:var(--fg)}
+textarea{padding:10px;line-height:1.6;resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{min-height:46px;padding:0 18px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-size:15px;font-weight:500;cursor:pointer}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.msg{font-size:13px;font-weight:700;color:var(--accent-ink)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.tbl table{border-collapse:collapse;width:100%;font-size:13px;text-align:center;font-variant-numeric:tabular-nums}
+.tbl th{background:var(--soft);color:var(--muted);font-weight:700;padding:8px 6px;white-space:nowrap}
+.tbl td{border-top:1px solid var(--line);padding:9px 6px;white-space:nowrap}
+.tbl td.hi{background:var(--warn-soft);color:var(--warn);font-weight:700}
+.tbl td:first-child{font-weight:700}
+.del{min-height:34px;min-width:44px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--muted);font-size:12px;cursor:pointer}
+.tg{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.tg h3{margin:0;font-size:14px}
+.tg h3 small{font-weight:500;color:var(--muted);margin-left:4px}
+.tg .g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.grp{font-size:12px;font-weight:700;color:var(--accent-ink);letter-spacing:.3px;margin-top:4px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);padding:6px max(16px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+nav.tabs .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+nav.tabs a{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:52px;justify-content:center;border-radius:12px;color:var(--muted);text-decoration:none;font-size:12px;font-weight:700}
+nav.tabs a svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs a[aria-current="page"]{color:var(--accent-ink);background:var(--accent-soft)}
+/* 바로보기: 사이드 서랍 */
+.gtop{display:flex;align-items:center;gap:10px}
+.gtop .btn{display:flex;align-items:center;gap:8px}
+.drawer{position:fixed;inset:0;z-index:20;display:flex}
+.drawer .scrim{flex:1;background:rgba(0,0,0,.4);border:0;cursor:pointer}
+.drawer aside{order:-1;width:min(300px,82vw);background:var(--surface);height:100%;overflow-y:auto;padding:calc(14px + env(safe-area-inset-top,0px)) 12px calc(14px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:2px;box-shadow:4px 0 24px rgba(0,0,0,.18)}
+.drawer aside .hd{font-size:13px;font-weight:700;color:var(--muted);padding:4px 10px 10px}
+.topic{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;padding:6px 10px;border:0;border-radius:10px;background:transparent;color:var(--fg);font-size:14.5px;text-align:left;cursor:pointer}
+.topic .pg{margin-left:auto;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.topic.sub{padding-left:24px}
+.topic[aria-current="true"]{background:var(--accent);color:var(--on-accent);font-weight:700}
+.topic[aria-current="true"] .pg{color:var(--on-accent)}
+article.g{display:flex;flex-direction:column;gap:16px}
+article.g .eb{font-size:12px;font-weight:700;color:var(--accent-ink)}
+article.g h2{margin:2px 0 0;font-size:22px;font-weight:800;letter-spacing:-.3px;text-wrap:balance}
+article.g .lead{margin:0;font-size:15px;color:var(--muted)}
+article.g section{display:flex;flex-direction:column;gap:8px}
+article.g h3{margin:0;font-size:16px}
+article.g ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:14.5px}
+.gnote{background:var(--accent-soft);color:var(--fg);border-radius:10px;padding:10px 12px;font-size:13.5px}
+.gwarn{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:13.5px;font-weight:700}
+.gt table{text-align:left;white-space:normal}
+.gt td,.gt th{white-space:normal;min-width:72px}
+.pn{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+.pn .btn{max-width:48%;font-size:13.5px}
+@media (prefers-reduced-motion:no-preference){.drawer aside{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(-24px);opacity:.6}}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--accent)"/><path d="M16 7c-4 5.5-6 8.6-6 11.2a6 6 0 0 0 12 0C22 15.6 20 12.5 16 7z" fill="var(--on-accent)"/></svg>
+    <h1>당뇨 Cody</h1>
+    <span class="sync" id="sync">이 기기에 저장</span>
+  </header>
+  <p class="sub" id="today"></p>
+  <main id="view"></main>
+</div>
+
+<nav class="tabs" aria-label="화면 이동"><div class="in">
+  <a href="#home" data-tab="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>대시보드</a>
+  <a href="#log" data-tab="log"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>기록 입력</a>
+  <a href="#guide" data-tab="guide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H4z"/><path d="M20 5h-6a3 3 0 0 0-3 3"/><path d="M20 5v13h-7"/></svg>바로보기</a>
+</div></nav>
+
+<div id="drawer" hidden></div>
+
+<script>
+function S(h,o){o=o||{};return {h:h,items:o.items||[],rows:o.rows||[],note:o.note||'',warn:o.warn||''}}
+var TOPICS = [
+  { label: '당뇨병의 정의', page: '04', lead: '혈액 속 포도당(혈당)이 필요 이상으로 높아지는 병이에요.', sections: [
+    S('한마디로', { items: ['밥·빵 같은 탄수화물은 몸에서 포도당으로 바뀌어 에너지로 쓰여요.', '이 포도당이 혈액에 너무 많아진 상태가 고혈당, 이게 계속되는 병이 당뇨병이에요.', '정상인은 췌장(이자)에서 나오는 인슐린 덕분에 혈당이 60~110 mg/dL로 유지돼요.', '인슐린이 부족하거나 잘 안 들으면 혈당이 오르고, 약 170 mg/dL를 넘으면 콩팥이 다 걸러내지 못해 당이 소변으로 나와요(요당).'] }),
+    S('진단은 소변이 아니라 혈당으로', { items: ['소변에 당이 나오느냐가 아니라 식전·식후 혈당이 높으냐가 기준이에요.', '수첩 기준 국내 환자는 약 200만 명, 성인 약 10%이고 그중 절반은 자신이 환자인지 몰라요.', '늘어나는 이유: 서구식 식사, 운동 부족, 비만, 고령화, 스트레스.'] }),
+    S('용어 풀이', { note: '인슐린 = 혈당을 세포 안으로 넣어 낮춰 주는 호르몬. 췌장 = 위 뒤쪽에 있는 소화·호르몬 기관(이자).' })
+  ]},
+  { label: '당뇨병의 원인', page: '05', lead: '환경·유전·면역, 세 가지 원인이 겹쳐서 생겨요.', sections: [
+    S('① 환경적 요인', { items: ['식사: 과식, 탄수화물(설탕 포함)·지방을 너무 많이 먹는 것', '비만: 인슐린이 더 많이 필요해지고 췌장이 점점 지쳐요', '스트레스: 오래 쌓이면 부신피질 호르몬(스트레스 호르몬)이 늘어요', '바이러스 감염: 저항력이 떨어지고 당 처리 능력도 나빠져요', '약: 부신피질 호르몬제(스테로이드), 이뇨제, 경구 피임약을 오래 먹을 때', '노화: 중년 이후 많이 생기고 나이가 많을수록 위험이 커져요'] }),
+    S('② 유전적 요인', { items: ['가족력과 관련이 깊어요. 다만 다른 원인이 함께 작용해요.'] }),
+    S('③ 면역학적 요인', { items: ['면역이 잘못 작동해 인슐린을 만드는 췌장 베타세포를 공격 → 주로 제1형 당뇨병의 원인이에요.'] })
+  ]},
+  { label: '건강한 혈당 관리', page: '06', lead: '꾸준히 재고 기록하는 것이 관리의 시작이에요.', sections: [
+    S('왜 재야 하나요?', { items: ['혈당 변동성(오르내리는 폭)이 크면 합병증 위험이 커질 수 있어요.', '꾸준히 재면 당뇨병·합병증 예방에 도움이 돼요.', '수치를 보고 식단과 운동 계획을 세울 수 있어요.', '저혈당·심한 고혈당을 미리 알아채고 빨리 대처할 수 있어요.', '기록을 들고 가면 의사와 더 알맞은 치료 계획을 세울 수 있어요.'] }),
+    S('혈당이 흔들리면 생기는 일', { rows: [['구분', '어떤 일이?', ''], ['고혈당', '신경 손상으로 발 저림, 시력 저하', '심장 건강에도 영향'], ['저혈당', '어지럼, 피로, 집중력 저하', '심하면 혼수(의식 잃음)']] })
+  ]},
+  { label: '혈당 측정 방식 (BGM·CGM)', page: '08', lead: '손가락으로 재는 방식(BGM)과 센서를 붙여 계속 재는 방식(CGM)이 있어요.', sections: [
+    S('한눈에 비교', { rows: [['', '자가혈당측정 BGM', '연속혈당측정 CGM'], ['재는 것', '혈액', '간질액(세포 사이의 액체)'], ['방법', '손가락 채혈 → 검사지에 묻혀 측정', '피부에 붙인 센서가 자동 측정'], ['횟수', '식사 전후, 취침 전, 새벽, 운동 전후, 저혈당 때 등', '24시간 내내 몇 분마다 자동'], ['장점', '그 순간 수치를 바로 확인', '하루 동안의 흐름(추세)을 볼 수 있음']] }),
+    S('알아둘 점', { items: ['BGM 측정기는 1년에 한 번 이상 병원 수치와 비교해 보세요.', '인슐린 치료 중이면 자가혈당측정을 적극 권장해요(혈당 조절·저혈당 예방).', 'CGM은 혈액 속 당이 간질액으로 옮겨 가는 데 5~15분 걸려서 손가락 측정값과 다를 수 있어요.', '수첩 그래프의 목표 혈당 범위: 70~180 mg/dL'] })
+  ]},
+  { label: '연속혈당측정(CGM) 관리', page: '10', lead: 'CGM은 혈당 흐름을 휴대폰으로 실시간 보여 줘요.', sections: [
+    S('좋은 점', { items: ['휴대폰으로 실시간 수치·추세 확인, 저혈당·고혈당 알람', '매번 손가락을 찌르지 않아도 돼요', '식후 급등, 운동 후 급락, 밤사이 저혈당 같은 패턴을 볼 수 있어요', '의사와 데이터를 공유해 진료에 도움'] }),
+    S('이럴 때 특히 도움돼요', { items: ['혈당이 오르내리는 폭이 클 때', '저혈당이 심하거나 자주 생길 때', '인슐린 치료법을 바꿨을 때', '이유 없이 당화혈색소가 오를 때', '인슐린을 적극적으로 쓰거나 인슐린 펌프를 쓸 때'] }),
+    S('CGM 목표', { note: 'TIR(Time in Range) = 하루 중 혈당이 목표 범위(70~180 mg/dL) 안에 있었던 시간의 비율. 목표 범위 안 시간은 늘리고, 그보다 높거나 낮은 시간은 줄이는 것이 목표예요.' })
+  ]},
+  { label: '당뇨병의 종류', page: '12', lead: '크게 제1형과 제2형, 그리고 몇 가지 특수한 형태가 있어요.', sections: [
+    S('제1형 (인슐린 의존형)', { items: ['주로 30대 이전·어린이에게 생기고 증상이 갑자기 심하게 나타나요.', '인슐린이 거의 안 나와서 인슐린 치료가 꼭 필요해요.', '면역이 췌장 베타세포를 파괴해서 생겨요.'] }),
+    S('제2형 (인슐린 비의존형)', { items: ['보통 40세 이후, 증상이 약하고 서서히 시작돼요.', '대부분 식사·운동요법으로 조절이 가능해요.', '유전 + 비만·과식·약·스트레스가 함께 작용해요.', '인슐린이 조금 부족하고, 있어도 잘 안 듣는 상태(인슐린 저항성)가 원인이에요.'] }),
+    S('그 밖의 형태', { items: ['영양실조형 당뇨병', '이차성 당뇨(다른 병·약 때문), 특히 임신 중 당뇨병', '내당능 장애: 정상(60~110)과 당뇨(126 이상) 사이 상태. 3년 안에 당뇨병이 될 가능성이 약 30%'] })
+  ]},
+  { label: '당뇨병의 증상', page: '13', lead: '대표 증상은 "3다" — 많이 마시고, 많이 먹고, 소변을 많이 봐요.', sections: [
+    S('왜 그런가요?', { items: ['혈당이 높으면 당이 소변으로 빠지며 물을 많이 끌고 나가요 → 소변이 많아짐(다뇨)', '몸에 물이 모자라 목이 마름 → 물을 많이 마심(다음)', '먹은 것이 에너지로 못 쓰이고 빠져나감 → 배고파서 더 먹음(다식)', '그 밖에 피로감, 체중 감소 등'] }),
+    S('주의', { warn: '증상이 전혀 없을 수도 있어서, 모르고 지내다 늦게 진단받는 경우가 많아요.' })
+  ]},
+  { label: '당뇨병의 진단', page: '14', lead: '혈당검사, 포도당 부하검사, 당화혈색소로 진단해요.', sections: [
+    S('이런 분은 검사를 받아 보세요', { items: ['40세 이상이면서 비만', '가까운 친척 중 당뇨병 환자가 있음', '갈증·다음·다뇨·다식·피로·체중 감소', '고혈압, 췌장염, 내분비 질환, 담석증이 있음', '혈압약 중 이뇨제(다이아자이드계)나 스테로이드를 오래 먹음'] }),
+    S('진단 기준표', { rows: [['공복 혈당', '포도당 먹고 2시간 혈당', '판정'], ['126 이상', '200 이상', '당뇨병'], ['100 미만', '140 이상 ~ 200 미만', '내당능 장애'], ['100 이상 ~ 126 미만', '140 미만', '공복혈당 장애']], note: '단위 mg/dL. 당화혈색소(최근 2~3개월 평균 혈당) 6.5% 이상이어도 당뇨병으로 진단해요.' }),
+    S('경구 포도당 내성 검사 (포도당 부하검사)', { items: ['검사 전 3일 이상 평소처럼 활동하고 하루 탄수화물 150g 이상 먹기', '전날 밤부터 10~14시간 굶고 공복 채혈', '포도당 75g 녹인 물을 5분 안에 마시기', '마시기 시작한 때부터 2시간 뒤 채혈 (필요하면 30·60·90분에도)'] })
+  ]},
+  { label: '당뇨병의 합병증', page: '16', lead: '갑자기 생기는 급성, 오래 쌓여 생기는 만성 합병증이 있어요.', sections: [
+    S('나누어 보면', { items: ['급성: 당뇨병성 케톤산증, 고삼투압 고혈당 상태, 저혈당', '만성: 심혈관 질환, 콩팥(신증), 신경(신경병증), 눈(망막병증)'] }),
+    S('몸의 어디에?', { items: ['눈 — 시력 감퇴, 실명', '심장 — 심장병', '콩팥 — 콩팥 합병증', '신경 — 저림 등 신경 합병증', '성기능 장애', '발 — 발 합병증'] }),
+    S('관리', { note: '예방하려면 정기적인 선별 검사(미리 찾아내는 검사)와 꾸준한 평가·치료가 필요해요.' })
+  ]},
+  { label: '· 급성 합병증', page: '17', lead: '응급 상황이 될 수 있어 꼭 알아 두어야 해요.', sections: [
+    S('케톤산혈증', { items: ['인슐린이 심하게 모자라면 몸이 지방을 태워 에너지를 얻는데, 이때 나오는 케톤체가 피를 산성으로 만들어요.', '호흡·심장박동이 빨라지고 의식을 잃을 수 있어요.'], warn: '반드시 전문병원에 입원해서 치료해야 해요.' }),
+    S('고혈당성 혼수', { items: ['과식, 인슐린 부족, 감염이 원인', '처음엔 소변이 많다가 구토·설사·복통 → 탈수로 혼수'], warn: '사망률이 높아 반드시 입원 치료해야 해요.' }),
+    S('저혈당 (대체로 50~60 mg/dL 이하에서 증상)', { items: ['원인: 식사를 거르거나 줄였을 때, 식사 시간이 불규칙할 때, 인슐린·혈당약을 처방보다 많이 썼을 때', '초기 증상: 창백, 식은땀, 빠른 맥박·두근거림, 배고픔, 손끝 저림, 어지럼, 떨림', '진행되면: 두통, 졸림, 물체가 둘로 보임, 말이 어눌, 경련, 의식 잃음'] }),
+    S('저혈당 대처법', { warn: '의식이 있으면 → 단순당(빨리 흡수되는 당) 10~15g을 바로 먹고 쉬기. 의식이 없으면 → 절대 먹이지 말고(기도로 넘어갈 수 있음) 바로 병원으로.' })
+  ]},
+  { label: '· 만성 합병증', page: '19', lead: '혈당이 오래 높으면 눈·콩팥·신경, 그리고 큰 혈관이 서서히 손상돼요.', sections: [
+    S('제2형 환자에게 얼마나 흔한가 (수첩 자료)', { rows: [['합병증', '비율'], ['대사증후군', '80.4%'], ['고콜레스테롤혈증', '74.2%'], ['신경병증', '60%'], ['망막증', '35.4%'], ['당뇨병 신장질환', '12.5%'], ['치매', '5.2%']], note: '출처는 수첩에 실린 2011~2024년 국내 조사 자료예요.' }),
+    S('눈 (당뇨병성 망막병증)', { items: ['당뇨 기간이 길수록, 혈당 조절이 나쁠수록 위험', '고지혈증·고혈압·흡연도 위험 요인', '제2형은 진단 즉시 안저검사(눈 속 망막 사진), 이후 매년 안과 검사'] }),
+    S('콩팥 (당뇨병성 신증)', { items: ['발병 15년쯤 되면 소변에 단백질이 새어 나오기 시작', '심해지면 부종(붓기) → 만성 신부전 → 투석·이식이 필요할 수 있음', '미세알부민뇨(소변 속 아주 적은 단백질)가 나오면 고혈압이 있는지 꼭 확인', '혈당 조절이 중요하고, 단백뇨가 있으면 단백질 섭취를 일부 줄여요'] }),
+    S('신경 (당뇨병성 신경병증)', { items: ['50% 이상은 증상이 없어서 발에 상처가 나도 모를 수 있어요', '자율신경(심장·소화 등을 저절로 조절하는 신경)까지 침범할 수 있어 조기 발견이 중요'] }),
+    S('신경 합병증이 있을 때 운동', { rows: [['상태', '권장 운동', '주의할 운동'], ['심한 말초신경병증·발 질환', '체중 부하가 적은 운동: 수영, 자전거, 팔 운동, 고정식 자전거, 물속 걷기', '체중 부하가 큰 운동'], ['심한 자율신경병증', '같음 (기립성 저혈압이면 누워서 타는 자전거)', '고강도 운동 — 시작 전 심장 검사 필요']] }),
+    S('대혈관의 손상 (p.23)', { items: ['당뇨병 환자의 동맥경화(혈관이 굳고 좁아짐)는 일반인보다 더 넓고 심하며 진행도 빨라요. 관련 질환이 생길 확률도 2~4배 높아요.', '동맥경화증: 혈관에 콜레스테롤이 많이 쌓여 생겨요. 뇌출혈, 협심증, 심근경색, 당뇨병성 신증, 망막증 등이 올 수 있어요.', '고혈압: 정확한 원인은 아직 모르지만 동맥경화와 서로 관련이 있어요.', '뇌혈관 경색증: 동맥경화로 뇌혈관이 굳어서 생겨요. 손발 저림, 불안감, 저항력 저하로 인한 감염증·화농증(곪는 것) 등이 나타날 수 있어요.'] })
+  ]},
+  { label: '자가혈당검사', page: '24', lead: '건강하게 살려면 환자 스스로의 생활 관리가 가장 중요해요. 식사 조절, 적당한 운동, 약물요법을 함께 하면서 정기적으로 혈당을 재는 것이 올바른 관리예요.', sections: [
+    S('언제 재야 할까요?', { items: ['사람에 따라 매일, 1주에 1~2회, 또는 정해진 시간에 재요.', '저혈당 증상이 있을 때 → 바로 검사', '몸이 심하게 아플 때 → 하루 4회 이상 측정', '고혈당 증상이 있거나 운동량이 바뀌었을 때 → 검사'] }),
+    S('혈당 조절 목표', { rows: [['구분', '정상', '목표'], ['공복 혈당 (mg/dL)', '70~100', '80~130'], ['식후 2시간 혈당 (mg/dL)', '90~140', '180 미만'], ['당화혈색소 (%)', '5.7 미만', '6.5 미만']], note: '임산부나 고령 환자는 목표가 다를 수 있어요. 의료진과 상의해서 정하세요.' }),
+    S('나의 목표치 정하기 (p.25)', { items: ['제2형 당뇨병의 당화혈색소 목표는 6.5% 미만을 권고해요.', '다만 당뇨병을 앓은 기간이 길어지면 목표를 내 상태에 맞게 계속 조정해야 해요.', '당화혈색소 = 지난 2~3개월간의 혈당을 반영하는 수치'], note: '의사와 정한 나의 목표치(공복·식후 혈당, 당화혈색소)는 「기록 입력 → ② 나의 현재 상태 및 목표 수치」의 목표 칸에 적어 두세요.' })
+  ]},
+  { label: '식사요법', page: '26', lead: '목표는 올바른 식습관·생활습관으로 고혈압·고지혈증(피 속 기름이 많은 상태) 같은 대사 이상을 바로잡아 합병증을 막고, 좋은 영양 상태를 유지하는 거예요.', sections: [
+    S('식사요법의 기본원칙 6가지', { items: ['1. 매일 일정한 시간에 알맞은 양을 규칙적으로 먹어요. 적절한 열량과 규칙적인 식사가 혈당 조절을 도와요.', '2. 설탕·꿀 같은 단순당을 주의해요. 열량이 농축돼 있고 빨리 흡수돼 혈당을 빨리 올려요.', '3. 식이섬유를 적절히 먹어요. 혈당과 혈중 지방을 낮춰 혈당 조절과 심장·혈관 질환 예방에 도움이 돼요.', '4. 지방은 적당히, 콜레스테롤은 제한해요. 동물성 지방·콜레스테롤은 심혈관 질환 위험을 높이니 줄이고, 식물성 기름으로 적당히 먹어요.', '5. 소금을 줄여요. 짜게 먹으면 혈압이 오를 수 있으니 싱겁게 먹는 습관을 들여요.', '6. 술은 피하는 것이 좋아요. 영양소는 없고 열량만 많아요.'] })
+  ]},
+  { label: '· 식품교환표 활용', page: '27', lead: '식품교환표는 영양소 구성이 비슷한 식품끼리 6가지 식품군으로 묶은 표예요. 같은 식품군 안에서는 같은 "교환 단위량"끼리 서로 바꿔 먹을 수 있어요.', sections: [
+    S('어떻게 쓰나요?', { items: ['6가지 식품군: 곡류군, 어육류군, 채소군, 지방군, 우유군, 과일군', '곡류군은 주식, 어육류군·채소군은 반찬, 지방군은 조리용 기름, 우유군·과일군은 주로 간식으로 먹어요.', '예) 밥 70g(1/3공기)과 식빵 35g(1쪽)은 둘 다 곡류군 1교환 단위 → 열량·영양소가 비슷해 서로 바꿔 먹을 수 있어요.'], note: '교환 단위 = 같은 식품군 안에서 열량·영양소가 비슷해지는 양. 아래 표의 양이 각각 "1교환 단위"예요.' }),
+    S('식품 교환표 — 곡류군 (p.28)', { rows: [['식품군', '1교환 단위량', ''], ['곡류군', '쌀밥 1/3공기 (70g)', '현미밥 1/3공기 (70g)'], ['', '삶은 국수 1/2공기 (90g)', '식빵 1쪽 (35g)'], ['', '고구마 中 1/2개 (70g)', '감자 中 1개 (140g)'], ['', '떡류 (50g)', '밤 大 3개 (60g)'], ['', '도토리묵 1/2모 (200g)', '']] }),
+    S('식품 교환표 — 어육류군', { rows: [['식품군', '1교환 단위량', ''], ['어육류군', '닭고기 가슴살 (40g)', '물오징어 몸통 1/3등분 (50g)'], ['', '새우(중하) 3마리 (50g)', '조갯살 1/3컵 (70g)'], ['', '멸치 잔 것 1/4컵 (15g)', '소고기 사태·홍두깨 등 (40g)'], ['', '돼지고기 안심 (40g)', '계란 中 1개 (55g)'], ['', '두부 1/4모 (80g)', '등푸른생선 小 1토막 (50g)'], ['', '검정콩 2큰술 (20g)', '삼겹살 (40g)'], ['', '닭다리 껍질 포함 (40g)', '소갈비 小 1토막 (40g)'], ['', '비엔나소시지 5개 (40g)', '치즈 1.5장 (30g)']] }),
+    S('식품 교환표 — 지방군 · 우유군 (p.29)', { rows: [['식품군', '1교환 단위량', ''], ['지방군', '들기름·콩기름 1작은스푼 (5g)', '땅콩(볶은 것) 8개, 1큰술 (8g)'], ['', '호두(건조) 中 1.5개 (8g)', '잣 50개, 1큰술 (8g)'], ['', '마요네즈 (8g)', '사우전드·프렌치 드레싱 (15g)'], ['우유군', '우유 1컵 (200mL)', '두유 무가당 1컵 (200mL)'], ['', '전지분유 1/4컵 (25g)', '']] }),
+    S('식품 교환표 — 과일군', { rows: [['식품군', '1교환 단위량', ''], ['과일군', '사과(부사) 中 1/2개 (100g)', '귤 大 1개 (100g)'], ['', '토마토 大 1개 (250g)', '딸기 中 7개 (150g)'], ['', '단감 大 1/3개 (80g)', '수박 中 1쪽 (150g)'], ['', '바나나 中 2/3개 (80g)', '오렌지 大 1/2개 (100g)'], ['', '키위 中 1개 (80g)', '']] }),
+    S('식품 교환표 — 채소군', { rows: [['식품군', '1교환 단위량', ''], ['채소군', '당근 大 1/3개 (70g)', '오이 中 1/3개 (70g)'], ['', '시금치 익혀서 1/3컵 (70g)', '버섯류 (50g)'], ['', '연근 (40g)', '무 (70g)'], ['', '단호박 1/10개 (40g)', '애호박 (70g)'], ['', '콩나물 (70g)', '배추김치 6~7개 (50g)']] })
+  ]},
+  { label: '· 음주', page: '34', lead: '술은 혈당 관리에 영향을 줘요. 꼭 주치의와 상의한 뒤에 마셔요.', sections: [
+    S('당뇨병 환자를 위한 음주 원칙', { items: ['혈당 조절이 잘 되는 경우에만 1~2잔 정도 마실 수 있어요.', '간질환, 고지혈증이 있거나 비만한 당뇨병 환자는 마시지 않아요.', '공복 상태나 운동 직후에는 마시지 않아요.', '당분이 많은 술(과실주, 곡주, 칵테일, 발효주 등)은 곡류군으로 계산해요.', '천천히 마시고, 도수 높은 술은 물에 희석해서 마시는 게 좋아요.', '일부 약물은 알코올과 함께 먹지 않아요.'], warn: '음주 후 다음 날 아침에 저혈당이 올 수 있어요. 아침 혈당검사와 아침식사를 거르지 마세요.' }),
+    S('주류 에너지와 주요 성분 (100g당)', { rows: [['주류', '열량 kcal', '탄수화물 g', '당류 g', '알코올 g'], ['맥주 4.5%', '46', '3.27', '0.17', '3.6'], ['흑맥주 4.2%', '45', '3.06', '0.2', '3.3'], ['소주 17.8%', '212', '0.08', '0', '14.7'], ['청주 16%', '132', '4.24', '3.11', '13.1'], ['막걸리 6%', '46', '1.56', '0.56', '4.4'], ['보드카 40%', '237', '0', '0', '32'], ['고량주 50%', '355', '0', '0', '40'], ['위스키 40%', '244', '0', '0', '34.6'], ['칵테일(위스키+주스) 16.8%', '149', '13.17', '0', '12.3'], ['적포도주 13%', '101', '2.85', '0.6', '10.3'], ['백포도주(샤르도네) 10.7%', '84', '2.16', '0.96', '8.2'], ['복분자주 15%', '132', '7.49', '5.8', '10.5'], ['매실주 10.2%', '155', '20.07', '8.6', '9.3']], note: '출처: 국가표준식품성분표 제10개정판(농촌진흥청). 소주처럼 당이 거의 없는 술도 열량은 높아요.' })
+  ]},
+  { label: '· 외식', page: '35', lead: '외식은 설탕·기름이 많은 고열량 음식이 많아 영양이 치우치고 소금을 많이 먹기 쉬워요.', sections: [
+    S('올바른 외식 방법', { items: ['식사 전에 음식 종류와 한 끼 양을 생각해 두고, 매일 식사량을 일정하게 유지해요.', '외식은 가급적 하루 1회 정도만 해요.', '정해진 식사 시간에서 1시간 이상 벗어나지 않게 제때 먹어요.', '외식한다고 그 전 끼니를 거르지 않아요.', '내 식사 계획에 맞춰 곡류·어육류·채소·지방이 골고루 들어간 음식을 골라요.'] }),
+    S('외식 음식 선택 요령', { items: ['여러 식품이 들어가 균형 잡힌 한식·일식을 고르고, 튀김·볶음이 많은 양식·중식은 자주 먹지 않아요.', '채소를 많이 먹을 수 있는 메뉴를 골라요.', '기름진 음식보다 기름기 적은 살코기를 골라요.', '된장국 국물, 장아찌, 짜거나 기름진 면 국물은 남겨요.', '단 음식, 짜거나 자극적인 음식, 재료와 양을 알 수 없는 음식은 피해요.'] }),
+    S('외식 종류별 열량 (1인분 기준)', { rows: [['열량 kcal', '음식 (제공량)'], ['~300', '버섯전골(300g), 양송이스프(100g), 떡볶이(180g)'], ['300~400', '소불고기(200g), 유부초밥(200g), 탕수육(200g), 깐풍기(150g), 등심스테이크(200g), 함박스테이크(200g), 김밥(230g), 김말이튀김(150g)'], ['400~450', '우동(일식)(700g), 참치김밥(250g)'], ['450~500', '생선초밥 모둠(300g), 캘리포니아롤(300g), 감자튀김(150g), 라면(550g)'], ['500~550', '김치우동(800g), 군만두(220g), 콤비네이션피자(200g), 오징어튀김(150g)'], ['550~600', '돌솥비빔밥(380g), 바지락칼국수(700g), 떡국(700g), 류산슬덮밥(550g), 김치볶음밥(330g)'], ['600~650', '등심돈가스(200g), 기스면(1000g), 스파게티 오일소스(400g), 스파게티 토마토소스(500g)'], ['650~700', '떡만두국(600g), 회덮밥(500g), 삼선짬뽕(900g), 오므라이스(400g)'], ['700~750', '소갈비양념구이(300g), 해물볶음밥(400g)'], ['750~800', '치즈돈가스(250g), 자장면(650g)'], ['800~900', '스파게티 크림소스(400g)'], ['900~1,000', '삼겹살구이(200g)']], note: '1인분 기준이며 식당마다 차이가 있어요.' }),
+    S('패스트푸드 열량 (p.37)', { rows: [['음식', '중량 g', '열량 kcal', '당질 g'], ['햄버거', '100', '270', '35'], ['새우버거', '160', '413', '46'], ['치킨버거', '170', '483', '46'], ['후렌치후라이', '90', '285', '35'], ['치킨 1조각', '105', '295', '7'], ['피자 regular 1조각', '90', '224', '31'], ['피자 large 1조각', '115', '287', '42']] }),
+    S('간식 열량', { rows: [['음식', '중량 g', '열량 kcal', '당질 g'], ['약식', '60', '155', '33'], ['머핀', '90', '212', '41'], ['팥빵', '86', '252', '45'], ['호떡', '70', '326', '55'], ['베이글', '70', '195', '37'], ['도넛, 케이크', '65', '244', '39'], ['쿠키류', '30', '140', '21'], ['스낵과자', '30', '157', '18'], ['아이스크림', '70', '130', '17']], note: '당질 = 혈당을 올리는 탄수화물의 양이에요.' })
+  ]},
+  { label: '운동요법', page: '38', lead: '운동은 칼로리를 써서 식사요법 효과를 높이고 혈당을 직접 낮춰요. 오래 하면 합병증을 막고, 스트레스를 풀어 정신 건강에도 좋아요.', sections: [
+    S('운동이 좋은 점', { items: ['당뇨병 위험군에서 제2형 당뇨병 발생을 줄이고 혈당 조절을 도와요. 제1형에서는 인슐린 효과를 높여 필요량을 줄여요.', '심혈관 질환(심장병, 중풍) 위험이 줄어요. 나쁜 콜레스테롤(LDL)은 줄고 좋은 콜레스테롤(HDL)은 늘며, 심장 혈류·폐 기능·고혈압이 좋아져요.', '비만형 당뇨병에서 체중 감량을 위한 식사요법의 보조 수단으로 효과가 커요.', '근육 등 몸 조직에서 인슐린이 더 잘 들어 고혈당이 좋아지고, 인슐린·먹는 혈당약 필요량도 줄 수 있어요.', '당뇨병 환자에게 약해지기 쉬운 근력이 좋아져요.', '피의 끈적임(점성도)을 낮춰 혈액순환을 돕고, 혈전증(피가 굳어 혈관을 막는 병) 예방에도 도움이 돼요.', '마음의 안정, 불안 해소, 숙면, 스트레스 해소로 삶의 질이 높아져요.'] }),
+    S('1시간 운동할 때 소모되는 칼로리 (p.39)', { rows: [['종류', 'kcal', '종류', 'kcal'], ['가벼운 가사', '120~150', '스키', '480~600'], ['자전거 (9.6km/시간)', '240~300', '자전거 (21km/시간)', '600~660'], ['탁구, 배드민턴, 배구', '300~360', '수영', '720'], ['빠르게 걷기 (6.4km/시간)', '360~420', '빨래', '180'], ['아주 빠르게 걷기 (8km/시간)', '420~480', '골프', '240~300'], ['테니스 (단식)', '420~480', '자전거 (12.8km/시간)', '300~360'], ['달리기 (9km/시간)', '600~660', '에어로빅', '300~360'], ['체조', '180', '자전거 (16km/시간)', '360~420'], ['정원손질', '340', '수상스키', '420~480'], ['걷기 (5.6km/시간)', '240~300', '자전거 (19.2km/시간)', '480~600'], ['볼링', '240~300', '계단 오르내리기', '310'], ['테니스 (복식)', '300~360', '등산', '780'], ['스케이팅 (6.4km/시간)', '360~420', '설거지', '270'], ['자전거 (17.6km/시간)', '420~480', '', '']] }),
+    S('약물 치료 중일 때 운동 주의점 (p.40)', { items: ['1. 인슐린을 맞는 경우 공복에 운동하면 심한 저혈당이 올 수 있어요 → 식후에 운동하세요.', '2. 운동 전에 혈당을 재 보세요. 100 mg/dL보다 낮으면 음식을 조금 먹고 운동하세요.', '3. 특히 어르신은 운동·외출할 때 음료수, 사탕, 과자, 크래커 같은 간식을 챙기세요.'], note: '저혈당 대비 간식 예: 설탕 1숟가락(15g), 꿀 1숟가락(15mL = 1큰술), 주스 또는 청량음료 3/4컵(175mL), 요구르트 1개(100mL 기준), 사탕 3~4개', warn: '고혈당이 심할 때 운동하면 합병증이나 케톤혈증이 생기고, 의식이 흐려져 다칠 위험이 있어요.' }),
+    S('운동 전 혈당 점검 (p.41)', { rows: [['운동 전 나의 상태', '가능 여부', '설명'], ['공복 시', '✕', '저혈당 위험'], ['70 mg/dL 이하', '✕', '저혈당 상태 → 운동 금지'], ['100 mg/dL 이하', '△', '꼭 해야 하면 간식 먹고 시작'], ['100~240 mg/dL', '○', '열심히 운동'], ['300 mg/dL 이상', '✕', '고혈당 상태 → 운동 금지'], ['250 mg/dL 이상 + 케톤 발생', '✕', '운동 금지']], note: '운동은 내 운동 능력, 체중, 병력 등을 생각해서 알맞게 계획해야 해요.' }),
+    S('운동 체크리스트', { items: ['① 매일 일지 쓰기: 혈당 수치, 약 복용량, 운동 시간·거리를 기록 → 운동에 따른 혈당 변화를 알 수 있어요.', '② 파트너와 함께: 운동에 따른 혈당 반응에 익숙해질 때까지 함께 운동해 위험에 대비해요.', '③ 당뇨병 인식표 지니기: 저혈당 등 문제가 생길 때 바로 도움을 받기 위해서예요.', '④ 잘 맞는 운동화와 청결: 편한 양말·신발을 신고, 운동 후 발에 상처가 없는지 살펴 바로 치료해요.'], note: '날마다 혈당·운동 기록은 「기록 입력」 페이지에 남길 수 있어요.' }),
+    S('운동 후 발 마사지 (p.42)', { items: ['① 발 아치 마사지: 발바닥을 위로 향하게 바닥에 놓고, 반대쪽 발뒤꿈치로 아치(발바닥 오목한 곳)를 문질러요.', '② 균형 잡기: 쿠션 위에 올라서서 중심을 한쪽 발에서 다른 발로 옮기기를 반복해요.', '③ 공 굴리기: 골프공·야구공·아령을 발 아치로 굴리며 마사지해요.', '④ 그 밖에: 발가락 최대한 벌렸다 오므리기, 발가락 굽혔다 펴기, 발가락 피아노 치기, 누워서 발 들어 흔들기, 계단 끝에 서서 뒤꿈치 내렸다 올리기'] }),
+    S('운동 횟수', { items: ['너무 자주 하면 근육이 피로해져 오히려 지치고 효과가 떨어져요.', '간격이 너무 길면 매번 처음 하는 것 같아 효과가 줄어요.', '가급적 매일 또는 이틀에 한 번 하세요.', '가정·직장 사정이 안 되면 횟수에 얽매이지 말고 시간 되는 대로라도 꾸준히 하세요.'] }),
+    S('1회 운동 프로그램 (p.43)', { rows: [['구분', '시간', '종류', '방법'], ['준비 운동', '5~10분', '걷기, 체조, 스트레칭', '가볍다~보통이다 수준'], ['본 운동', '20~30분', '근력 운동', '8~15회 반복 가능한 무게, 1~3세트, 운동 자각도 11~15'], ['본 운동', '20~40분', '유산소 운동', '최대 심박수의 50~70% (심박수 100~152회/분), 운동 자각도 12~16'], ['정리 운동', '10분', '운동한 부위 스트레칭', '가볍다~보통이다 수준']], note: '운동 자각도 = 내가 느끼는 힘든 정도를 숫자로 나타낸 것(숫자가 클수록 힘듦). 유산소 운동 = 걷기·자전거·수영처럼 숨이 차게 오래 하는 운동.' })
+  ]},
+  { label: '합병증 동반 시 운동 지침', page: '44', lead: '합병증이 있으면 운동 종류를 골라서 해야 해요. 합병증별로 주의할 점, 권장 운동, 금기 운동(하면 안 되는 운동)을 정리했어요.', sections: [
+    S('자율 신경병증', { items: ['교감·부교감신경(몸을 저절로 조절하는 신경)이 손상되면 운동 중 심박수·혈압·1회 박출량(심장이 한 번에 내보내는 피의 양)이 비정상이 되므로 운동 자각도(내가 느끼는 힘든 정도)를 기준으로 해요.', '탈수와 체온 조절 장애가 생길 수 있어 실내에서, 온도를 일정하게 유지하며 운동해요.'], rows: [['구분', '운동'], ['권장 운동', '고정식 자전거 타기, 스트레칭, 수영 및 수중 운동 등'], ['금기 운동', '줄넘기, 조깅, 에어로빅, 고강도 근력 운동 등']] }),
+    S('말초 신경병증', { items: ['발에 상처를 줄 수 있는 운동은 하지 않아요.', '궤양(헐어서 생긴 상처)이 진행 중이면 수중 운동은 하지 않아요.', '통풍이 잘 되고 발에 잘 맞는 신발을 신어요.', '균형 감각이 많이 필요한 운동은 하지 않아요.'], rows: [['구분', '운동'], ['권장 운동', '고정식 자전거 타기, 맨손체조, 암에르고미터(팔로 돌리는 운동기구) 등'], ['금기 운동', '맨발로 뛰기, 격렬한 구기 운동, 수영, 울퉁불퉁한 길 걷기 등']] }),
+    S('신증 (콩팥 합병증)', { items: ['혈압을 올릴 수 있는 운동과 호흡 참기는 하지 않아요.', '주로 저강도(가벼운) 운동을 권장해요.'], rows: [['구분', '운동'], ['권장 운동', '가벼운 걷기, 고정식 자전거 타기, 맨손체조, 물속 걷기 등'], ['금기 운동', '조깅, 줄넘기, 고강도 근력 운동 등']] }),
+    S('망막증 (눈 합병증, p.45)', { items: ['증식성·심한 비증식성 망막증이면 고강도 근력 운동이나 머리 위로 드는 무거운 운동은 하지 않아요.', '머리를 아래로 숙이거나 힘든 운동은 삼가요.', '운동 강도는 심박수보다 운동 자각도(10~12)를 기준으로 해요.'], rows: [['구분', '운동'], ['권장 운동', '걷기, 고정식 자전거 타기, 맨손체조, 스트레칭 등'], ['금기 운동', '조깅, 라켓 운동, 머리에 충격을 주는 활동, 역기 들기, 복싱 등']] }),
+    S('고혈압', { items: ['무거운 무게를 드는 운동이나 호흡 참기는 삼가요.', '가벼운~중간 강도의 걷기, 자전거처럼 큰 근육을 쓰는 운동을 해요.'], rows: [['구분', '운동'], ['권장 운동', '걷기, 고정식 자전거 타기, 맨손체조, 스트레칭 등'], ['금기 운동', '머리에 충격을 주는 활동, 역기 들기, 복싱, 고강도 근력 운동 등']] }),
+    S('심혈관 질환', { items: ['가벼운 강도로 운동해요.', '운동 중간중간 쉬어요.', '무거운 물건을 들거나 무리하게 힘주는 동작은 하지 않아요.', '상체 운동보다 하체 운동이 좋아요.'], rows: [['구분', '운동'], ['권장 운동', '고정식 자전거 타기, 맨손체조, 가벼운 걷기 등'], ['금기 운동', '혈압을 올리는 운동, 과도한 상체 운동 등']] })
+  ]},
+  { label: '발 관리요법', page: '46', lead: '당뇨병이 있으면 발에 상처가 나도 잘 못 느끼고 잘 낫지 않아요. 매일 발을 살피고 관리하세요.', sections: [
+    S('당뇨병 환자의 발 관리 9가지', { items: ['1. 따뜻한 물과 비누로 매일 닦아요.', '2. 특히 발가락 사이를 습기 없이 잘 말려요.', '3. 발톱은 너무 짧지 않게 일자로 잘라요.', '4. 피부에 로션을 발라 부드럽게 유지해요.', '5. 양말은 매일 갈아 신어요.', '6. 신발 소재는 부드러운 가죽이 좋고, 합성수지 제품은 피해요.', '7. 상처 예방을 위해 맨발로 다니지 않아요.', '8. 잘 맞는 편한 신발을 신어요.', '9. 매일 신발 안을 살펴 상처 낼 만한 것을 없애요.'] })
+  ]},
+  { label: '발 마사지법', page: '47', lead: '발 마사지는 발의 혈액순환을 돕고, 발 상태를 매일 살피는 기회도 돼요.', sections: [
+    S('발 마사지 순서', { items: ['① 발등과 발바닥을 맞잡고 쓸어 올렸다 내리기', '② 발 옆 안쪽과 바깥쪽을 쓸어 올렸다 내리기', '③ 발바닥 용천 부위 눌러주기', '④ 발가락 사이사이를 손가락으로 눌러주기', '⑤ 발등의 발뼈 사이를 엄지손가락으로 밀어주기', '⑥ 발등을 엄지손가락으로 엇갈리며 문지르기', '⑦ 발등에서 발목 쪽으로 쓸어 올리기', '⑧ 복숭아뼈 둘레를 손으로 큰 원을 그리며 문지르기'], note: '용천 = 발바닥 윗부분과 가운데 사이, 사람 인(人)자 모양으로 움푹 들어간 곳이에요.' })
+  ]},
+  { label: '정기 검진', page: '48', lead: '특별한 증상이 없어도 합병증을 일찍 찾아 예방·치료하려면 반드시 정기적으로 검사해야 해요.', sections: [
+    S('당뇨병 환자가 받아야 할 검사', { rows: [['검사 항목', '목표치', '검사 빈도'], ['공복 혈당', '80~130 mg/dL', '수시로'], ['식후 2시간 혈당', '180 mg/dL 미만', '수시로'], ['혈압', '140/85 mmHg 미만', '수시로'], ['체중', '표준체중', '수시로'], ['당화혈색소', '6.5% 미만', '1년에 4회'], ['알부민뇨 (신장)', '30 mg/24hr 미만', '1년에 1회 이상'], ['혈청 크레아티닌 (신장)', '0.5~1.3 mg/dL', '1년에 1회 이상'], ['SGOT (간)', '13~36 IU/L', '1년에 1회 이상'], ['SGPT (간)', '5~33 IU/L', '1년에 1회 이상'], ['총 콜레스테롤', '180 mg/dL 미만', '1년에 1회 이상'], ['중성지방', '150 mg/dL 미만', '1년에 1회 이상'], ['저밀도 콜레스테롤 (LDL)', '100 mg/dL 미만', '1년에 1회 이상'], ['고밀도 콜레스테롤 (HDL)', '남 40 / 여 50 mg/dL 이상', '1년에 1회 이상'], ['흉부 X-선 검사', '정상', '1년에 1회'], ['심전도', '정상', '1년에 1회'], ['안과 검사', '정상', '1년에 1회'], ['자율신경 검사', '정상', '1년에 1회']], note: '크레아티닌 = 콩팥 기능을 보는 피 검사 수치. SGOT·SGPT = 간 기능 수치. 검사 결과는 「기록 입력 → ② 나의 현재 상태 및 목표 수치」에 적어 두세요.' }),
+    S('주의', { items: ['질환과 관련된 자세한 사항은 전문의와 상의하세요.'] })
+  ]},
+  { label: '백신 접종', page: '49', lead: '당뇨병이 있으면 감염병에 걸렸을 때 더 위험할 수 있어 예방접종이 중요해요.', sections: [
+    S('권고 사항', { items: ['1. 매년 인플루엔자(독감) 백신 접종을 권고해요.', '2. 폐렴사슬알균(폐렴구균) 백신 접종을 고려해요.', '3. COVID-19 백신 접종을 권고해요.'] }),
+    S('백신별 구분', { rows: [['백신', '구분'], ['인플루엔자', '당뇨병이라서 특히 필요성이 강조되는 백신'], ['폐렴사슬알균', '당뇨병이라서 특히 필요성이 강조되는 백신'], ['Td (파상풍-디프테리아)', '일반 권고 기준에 따라 접종'], ['A형 간염', '일반 권고 기준에 따라 접종'], ['B형 간염', '일반 권고 기준에 따라 접종'], ['인유두종바이러스 (HPV)', '일반 권고 기준에 따라 접종'], ['수두', '일반 권고 기준에 따라 접종'], ['MMR (홍역·볼거리·풍진)', '일반 권고 기준에 따라 접종'], ['수막알균', '일반 권고 기준에 따라 접종'], ['대상포진', '일반 권고 기준에 따라 접종']], note: '"일반 권고 기준" = 예방접종을 한 적이 없거나 그 병을 앓은 적이 없을 때 일반적인 기준에 따라 맞는 백신이에요. 내가 맞아야 할 백신은 의사와 상의하세요.' })
+  ]}
+];
+
+(function(){
+var KEY='cody-web-v1';
+var WD=['일','월','화','수','목','금','토'];
+var GL=[['mFast','아침','공복','pre'],['mPost','아침','식후','post'],['lPre','점심','식전','pre'],['lPost','점심','식후','post'],['dPre','저녁','식전','pre'],['dPost','저녁','식후','post']];
+var ITEMS=[['fbg','공복 혈당','mg/dL','예: 80–130','혈당 · 혈압 · 체중'],['ppg','식후 혈당','mg/dL','예: 180 미만'],['a1c','당화혈색소 (HbA1c)','%','예: 6.5 미만'],['bp','혈압','mmHg','예: 140/85 미만'],['wt','몸무게','kg',''],['tc','총 콜레스테롤','mg/dL','예: 180 미만','혈중 지질 (콜레스테롤)'],['ldl','LDL (나쁜 콜레스테롤)','mg/dL','예: 100 미만'],['hdl','HDL (좋은 콜레스테롤)','mg/dL','예: 남40·여50 이상'],['tg','중성지방','mg/dL','예: 150 미만'],['uacr','소변알부민/크레아티닌비','mg/g','예: 30 미만','신장(콩팥) 기능 검사'],['egfr','사구체여과율 (eGFR)','mL/min/1.73m²','예: 60 이상']];
+var COLS=[['cur','현재 수치','text'],['curDate','현재 검사일','date'],['goal','목표','text'],['m3','3개월 뒤 수치','text'],['m3Date','3개월 뒤 검사일','date']];
+
+var S={logs:[],targets:{},memo:'',meds:{},meals:{}};
+var docRef=null, synced=false, tab='home', gi=0, msg='', pending=false;
+function pad(n){return String(n).padStart(2,'0')}
+function ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function today(){return ymd(new Date())}
+function daysAgo(n){var d=new Date();d.setDate(d.getDate()-n);return ymd(d)}
+function md(s){if(!s)return '–';var p=s.split('-');return Number(p[1])+'/'+Number(p[2])}
+function num(v){if(v===''||v==null)return null;var n=Number(v);return isNaN(n)?null:n}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function avg(a){return a.length?Math.round(a.reduce(function(s,x){return s+x},0)/a.length):null}
+function postAvg(l){return avg(['mPost','lPost','dPost'].map(function(k){return num(l[k])}).filter(function(x){return x!=null}))}
+function emptyDraft(d){return {date:d||today(),mFast:'',mPost:'',lPre:'',lPost:'',dPre:'',dPost:'',ex:'',wt:'',sys:'',dia:''}}
+var draft=emptyDraft();
+
+function norm(x){x=x||{};return {logs:Array.isArray(x.logs)?x.logs:[],targets:x.targets||{},memo:x.memo||'',meds:x.meds||{},meals:x.meals||{}}}
+function sortLogs(){S.logs.sort(function(a,b){return a.date<b.date?1:-1})}
+try{var raw=localStorage.getItem(KEY);if(raw){S=norm(JSON.parse(raw));sortLogs()}}catch(e){}
+
+var saveT=null;
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  if(docRef){clearTimeout(saveT);saveT=setTimeout(function(){docRef.set(JSON.parse(JSON.stringify(S))).then(function(){setSync(true)}).catch(function(){setSync(false)})},400)}
+}
+function setSync(ok){synced=ok;var el=document.getElementById('sync');el.textContent=ok?'계정에 저장됨':'이 기기에 저장';el.className='sync'+(ok?' ok':'')}
+
+(async function(){
+  try{
+    if(!window.claude||!window.claude.use)return;
+    var db=await window.claude.use('db');var user=await window.claude.use('user');
+    if(!db||!user)return;
+    var uid=await user.id();if(!uid)return;
+    docRef=db.doc('data/users/'+uid+'/state');
+    var first=true;
+    docRef.onSnapshot(function(snap){
+      if(snap.exists){S=norm(snap.data());sortLogs();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}setSync(true);rerender()}
+      else if(first){setSync(true);if(S.logs.length||Object.keys(S.targets).length)save()}
+      first=false;
+    },function(){setSync(false)});
+  }catch(e){}
+})();
+
+function rerender(){var a=document.activeElement;if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')&&a.type!=='checkbox'){pending=true;return}render()}
+document.addEventListener('focusout',function(){if(pending){pending=false;setTimeout(function(){var a=document.activeElement;if(!a||(a.tagName!=='INPUT'&&a.tagName!=='TEXTAREA'))render();else pending=true},0)}});
+
+/* ---------- 대시보드 ---------- */
+function gy(v){var c=Math.max(60,Math.min(300,v));return +(170-(c-60)*0.625).toFixed(1)}
+function home(){
+  var L=S.logs,T=S.targets,t=today(),h='';
+  if(!L.length)h+='<div class="empty">아직 기록이 없어요. 아래 <b>기록 입력</b> 탭에서 혈당·혈압·체중을 저장하면 이 화면의 숫자와 그래프가 자동으로 바뀌어요.</div>';
+  function first(k){for(var i=0;i<L.length;i++){var v=num(L[i][k]);if(v!=null)return {v:v,date:L[i].date}}return null}
+  var f=first('mFast'),p=null,bp=null,wt=first('wt');
+  for(var i=0;i<L.length&&!p;i++){var pa=postAvg(L[i]);if(pa!=null)p={v:pa,date:L[i].date}}
+  for(var j=0;j<L.length&&!bp;j++){if(num(L[j].sys)!=null)bp={s:num(L[j].sys),d:num(L[j].dia),date:L[j].date}}
+  if(!wt&&num(T['wt.cur'])!=null)wt={v:num(T['wt.cur']),date:T['wt.curDate']};
+  var a1=num(T['a1c.m3'])!=null?{v:num(T['a1c.m3']),date:T['a1c.m3Date']}:(num(T['a1c.cur'])!=null?{v:num(T['a1c.cur']),date:T['a1c.curDate']}:null);
+  function goal(k,d){return T[k+'.goal']||d}
+  function stat(lb,v,u,d,cls,pill){return '<div class="stat"><span class="lb">'+lb+'</span><span class="v">'+v+'<small>'+u+'</small></span><span class="d">'+d+'</span><span class="pill '+cls+'">'+esc(pill)+'</span></div>'}
+  h+='<div class="grid2">';
+  h+=f?stat('공복 혈당',f.v,'mg/dL',md(f.date)+' 기록',(f.v>=80&&f.v<=130)?'ok':'warn',((f.v>=80&&f.v<=130)?'범위 안 · ':'범위 밖 · ')+goal('fbg','80–130')):stat('공복 혈당','–','mg/dL','기록 없음','','목표 '+goal('fbg','80–130'));
+  h+=p?stat('식후 혈당 평균',p.v,'mg/dL',md(p.date)+' 기록',p.v<180?'ok':'warn',(p.v<180?'범위 안 · ':'초과 · ')+goal('ppg','180 미만')):stat('식후 혈당 평균','–','mg/dL','기록 없음','','목표 '+goal('ppg','180 미만'));
+  h+=a1?stat('당화혈색소',a1.v,'%',a1.date?md(a1.date)+' 검사':'검사일 미입력',a1.v<6.5?'ok':'warn',a1.v<6.5?'목표 달성':'목표보다 '+(Math.round((a1.v-6.5)*10)/10)+'%p 높음'):stat('당화혈색소','–','%','검사 수치 입력 전','','목표 '+goal('a1c','6.5 미만'));
+  var bOk=bp&&bp.s<140&&(bp.d==null||bp.d<85);
+  h+=stat('혈압',bp?bp.s+'/'+(bp.d!=null?bp.d:'?'):'–','mmHg',(wt?'체중 '+wt.v+'kg':'체중 기록 없음'),bp?(bOk?'ok':'warn'):'',bp?(bOk?'목표 안 · 140/85 미만':'높음 · 140/85 미만'):'목표 140/85 미만');
+  h+='</div>';
+
+  var R=L.slice(0,7).reverse(),n=R.length,fp=[],pp=[],lb=[],fv=[],pv=[],over=[];
+  R.forEach(function(l,k){var x=n===1?182:Math.round(46+k*(278/(n-1)));var a=num(l.mFast),b=postAvg(l);
+    if(a!=null){fp.push([x,gy(a)]);fv.push(a)} if(b!=null){pp.push([x,gy(b)]);pv.push(b)}
+    var mx=Math.max.apply(null,['mPost','lPost','dPost'].map(function(q){return num(l[q])||0}));if(mx>180)over.push(md(l.date));
+    lb.push('<text x="'+x+'" y="192" font-size="11" text-anchor="middle">'+(l.date===t?'오늘':md(l.date))+'</text>')});
+  function pl(a,c){return a.length?'<polyline points="'+a.map(function(q){return q.join(',')}).join(' ')+'" fill="none" stroke="'+c+'" stroke-width="2.5" stroke-linejoin="round"/>'+a.map(function(q){return '<circle cx="'+q[0]+'" cy="'+q[1]+'" r="4" fill="var(--surface)" stroke="'+c+'" stroke-width="2.5"/>'}).join(''):''}
+  var sum=n?'평균 공복 '+(avg(fv)!=null?avg(fv):'–')+' · 식후 '+(avg(pv)!=null?avg(pv):'–')+' mg/dL — '+(over.length?'식후 180 넘은 날 '+over.length+'일 ('+over.join(', ')+')':'식후 180 넘은 날 없음'):'기록을 저장하면 그래프가 그려져요.';
+  h+='<div class="card"><h2>최근 7회 혈당 추이</h2><div class="legend"><span><i style="background:var(--accent)"></i>아침 공복</span><span><i style="background:var(--post)"></i>식후 평균</span><span><i style="background:var(--band);height:8px"></i>공복 목표 80–130</span></div>'+
+   '<svg viewBox="0 0 340 200" role="img" aria-label="최근 혈당 그래프. '+esc(sum)+'" style="width:100%;height:auto;display:block">'+
+   '<rect x="36" y="126.3" width="296" height="31.2" fill="var(--band)"/>'+
+   '<g stroke="var(--line)"><line x1="36" y1="157.5" x2="332" y2="157.5"/><line x1="36" y1="126.3" x2="332" y2="126.3"/><line x1="36" y1="57.5" x2="332" y2="57.5"/><line x1="36" y1="20" x2="332" y2="20"/></g>'+
+   '<line x1="36" y1="95" x2="332" y2="95" stroke="var(--post)" stroke-width="1.2" stroke-dasharray="4 4"/><text x="330" y="90" font-size="10" text-anchor="end">식후 목표 180</text>'+
+   '<g font-size="10" text-anchor="end"><text x="30" y="161">80</text><text x="30" y="130">130</text><text x="30" y="99">180</text><text x="30" y="61">240</text><text x="30" y="24">300</text></g>'+
+   pl(fp,'var(--accent)')+pl(pp,'var(--post)')+lb.join('')+'</svg><p class="note">'+esc(sum)+'</p></div>';
+
+  var ac=num(T['a1c.cur']),am=num(T['a1c.m3']),g=parseFloat(String(T['a1c.goal']||'').replace(/[^0-9.]/g,''))||6.5,gY=+(150-(g-5)*35).toFixed(1),bars='';
+  function bar(v,l,x,c){var hh=Math.max(4,Math.min(140,(v-5)*35));return '<rect x="'+x+'" y="'+(150-hh)+'" width="56" height="'+hh+'" rx="6" fill="'+c+'"/><text x="'+(x+28)+'" y="'+(142-hh)+'" font-size="12" font-weight="700" text-anchor="middle" style="fill:var(--fg)">'+v+'%</text><text x="'+(x+28)+'" y="168" font-size="11" text-anchor="middle">'+l+'</text>'}
+  if(ac!=null)bars+=bar(ac,T['a1c.curDate']?md(T['a1c.curDate']):'현재',am!=null?80:142,am!=null?'var(--muted)':'var(--accent)');
+  if(am!=null)bars+=bar(am,T['a1c.m3Date']?md(T['a1c.m3Date']):'3개월 뒤',ac!=null?204:142,'var(--accent)');
+  if(!bars)bars='<text x="170" y="95" font-size="12" text-anchor="middle">아직 입력된 검사 수치가 없어요</text>';
+  var as='기록 입력 → 「현재 상태 및 목표 수치」에 넣으면 표시돼요.';
+  if(ac!=null&&am!=null){var dl=Math.round((am-ac)*10)/10;as='변화 '+(dl>0?'+':'')+dl+'%p · '+(dl<=0?'좋아지고 있어요':'올랐어요. 주치의와 상의해 보세요')}
+  else if(ac!=null)as=T['a1c.m3Date']?'다음 검사 '+md(T['a1c.m3Date']):'현재 '+ac+'% · 3개월 뒤 검사 후 입력하세요';
+  h+='<div class="card"><h2>당화혈색소 변화</h2><svg viewBox="0 0 340 176" role="img" aria-label="당화혈색소 변화. '+esc(as)+'" style="width:100%;height:auto;display:block"><line x1="20" y1="150" x2="330" y2="150" stroke="var(--line)"/><line x1="20" y1="'+gY+'" x2="330" y2="'+gY+'" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="4 4"/><text x="328" y="'+(gY-5)+'" font-size="10" text-anchor="end">목표 '+g+'</text>'+bars+'</svg><p class="note" style="color:var(--fg);font-weight:500">'+esc(as)+'</p></div>';
+
+  var tm=S.meds[t]||[false,false,false],done=0;
+  for(var d=0;d<7;d++)done+=(S.meds[daysAgo(d)]||[]).filter(Boolean).length;
+  h+='<div class="card"><h2>오늘 약 복용</h2>'+['아침 식후 약','점심 식후 약','저녁 식후 약'].map(function(x,k){return '<label class="check"><input type="checkbox" id="med'+k+'" data-med="'+k+'"'+(tm[k]?' checked':'')+'>'+x+'<span class="st">'+(tm[k]?'복용 완료':'아직')+'</span></label>'}).join('')+
+   '<div class="box">최근 7일 복용률 <b>'+Math.round(done/21*100)+'%</b> (21회 중 '+done+'회)</div></div>';
+
+  var ml=S.meals[t]||{},tl=L.filter(function(l){return l.date===t})[0],pt=tl?postAvg(tl):null;
+  h+='<div class="card"><h2>오늘 식사 메모</h2>'+[['b','아침','예: 잡곡밥 1/3공기, 달걀'],['l','점심','예: 국수 1/2공기'],['d','저녁','예: 생선, 나물']].map(function(m){return '<label class="f">'+m[1]+'<input type="text" id="meal-'+m[0]+'" data-meal="'+m[0]+'" value="'+esc(ml[m[0]]||'')+'" placeholder="'+m[2]+'"></label>'}).join('')+
+   '<p class="note">오늘 식후 혈당 '+(pt!=null?pt+' mg/dL':'기록 없음')+' — 메뉴와 함께 보면 어떤 음식에 혈당이 오르는지 알 수 있어요.</p></div>';
+
+  var ws=daysAgo(6),wk=L.filter(function(l){return l.date>=ws&&l.date<=t}),ew=wk.reduce(function(s,l){return s+(num(l.ex)||0)},0),ed=wk.filter(function(l){return (num(l.ex)||0)>0}).length,pc=Math.min(100,Math.round(ew/150*100));
+  h+='<div class="card"><h2>운동</h2><div><span style="font-size:28px;font-weight:800;font-variant-numeric:tabular-nums">'+ew+'</span> <span class="note" style="display:inline">/ 150분 (최근 7일)</span></div><div class="bar" role="img" aria-label="최근 7일 운동 '+ew+'분, 목표의 '+pc+'%"><div style="width:'+pc+'%"></div></div><p class="note">'+(ew>=150?'이번 주 목표 달성! 식후 걷기를 계속 이어가요.':'목표까지 '+(150-ew)+'분 — 식후 20~30분 걷기를 추천해요.')+'</p><div class="box">오늘 운동 <b>'+(tl&&num(tl.ex)!=null?num(tl.ex)+'분':'기록 없음')+'</b> · 운동한 날 <b>'+ed+'일</b></div></div>';
+
+  if(L.length){h+='<div class="card"><h2>최근 기록</h2><div class="tbl"><table><thead><tr><th>날짜</th><th>공복</th><th>식후 평균</th><th>체중</th><th>혈압</th></tr></thead><tbody>'+
+   L.slice(0,7).map(function(l){var a=num(l.mFast),b=postAvg(l),s=num(l.sys),dd=num(l.dia);return '<tr><td>'+(l.date===t?'오늘':md(l.date))+'</td><td'+(a!=null&&(a<70||a>130)?' class="hi"':'')+'>'+(a!=null?a:'–')+'</td><td'+(b!=null&&b>180?' class="hi"':'')+'>'+(b!=null?b:'–')+'</td><td>'+(num(l.wt)!=null?num(l.wt):'–')+'</td><td'+((s!=null&&s>=140)||(dd!=null&&dd>=85)?' class="hi"':'')+'>'+(s!=null?s+'/'+(dd!=null?dd:'?'):'–')+'</td></tr>'}).join('')+
+   '</tbody></table></div><p class="note">주황 칸 = 목표 범위 밖 (공복 70 미만·130 초과, 식후 180 초과, 혈압 140/85 이상)</p></div>'}
+  return h;
+}
+
+/* ---------- 기록 입력 ---------- */
+function inp(id,key,ph,type,extra){return '<input type="'+(type||'number')+'" id="'+id+'" data-draft="'+key+'" value="'+esc(draft[key])+'" placeholder="'+ph+'" inputmode="decimal"'+(extra||'')+'>'}
+function logView(){
+  var h='<div class="card"><h2>나의 혈당 관리 — 기록하기</h2><p class="note">혈당 단위 mg/dL · 빈칸은 비워도 돼요. 같은 날짜로 저장하면 덮어써요.</p>';
+  h+='<label class="f">날짜'+inp('f-date','date','','date')+'</label><div class="grid2">';
+  GL.forEach(function(g){h+='<label class="f"><span>'+g[1]+'</span>'+g[2]+inp('f-'+g[0],g[0],'mg/dL')+'</label>'});
+  h+='<label class="f">운동 (분)'+inp('f-ex','ex','예: 30')+'</label><label class="f">체중 (kg)'+inp('f-wt','wt','예: 72.4','number',' step="0.1"')+'</label>';
+  h+='<label class="f">혈압 위 (수축기)'+inp('f-sys','sys','예: 130')+'</label><label class="f">혈압 아래 (확장기)'+inp('f-dia','dia','예: 80')+'</label></div>';
+  h+='<div class="row"><button class="btn pri" data-act="add" type="button">저장하기</button><button class="btn" data-act="clear" type="button">비우기</button><span class="msg" role="status">'+esc(msg)+'</span></div></div>';
+
+  h+='<div class="card"><h2>기록 목록 <small class="note" style="display:inline">'+S.logs.length+'일</small></h2>';
+  if(!S.logs.length)h+='<div class="empty">아직 기록이 없어요. 위에서 첫 기록을 저장해 보세요.</div>';
+  else h+='<div class="tbl"><table><thead><tr><th>날짜</th>'+GL.map(function(g){return '<th>'+g[1]+'<br>'+g[2]+'</th>'}).join('')+'<th>운동</th><th>체중</th><th>혈압</th><th></th></tr></thead><tbody>'+
+    S.logs.map(function(l){var c='';GL.forEach(function(g){var v=num(l[g[0]]),hi=v!=null&&(g[3]==='pre'?(v<70||v>130):v>180);c+='<td'+(hi?' class="hi"':'')+'>'+(v!=null?v:'–')+'</td>'});
+      var s=num(l.sys),d=num(l.dia);return '<tr><td>'+md(l.date)+'</td>'+c+'<td>'+(num(l.ex)!=null?num(l.ex)+'분':'–')+'</td><td>'+(num(l.wt)!=null?num(l.wt):'–')+'</td><td'+((s!=null&&s>=140)||(d!=null&&d>=85)?' class="hi"':'')+'>'+(s!=null?s+'/'+(d!=null?d:'?'):'–')+'</td><td><button class="del" type="button" data-del="'+esc(l.date)+'" aria-label="'+md(l.date)+' 기록 삭제">삭제</button></td></tr>'}).join('')+'</tbody></table></div>';
+  h+='</div>';
+
+  h+='<div class="card"><h2>나의 현재 상태 및 목표 수치</h2><p class="note">병원 검사 결과를 입력하면 자동 저장돼요. 목표 칸 회색 글씨는 수첩의 일반 참고값이에요. 실제 목표는 주치의와 정하세요.</p>';
+  ITEMS.forEach(function(it){
+    if(it[4])h+='<div class="grp">'+it[4]+'</div>';
+    h+='<div class="tg"><h3>'+it[1]+'<small>'+it[2]+'</small></h3><div class="g">'+COLS.map(function(c){var k=it[0]+'.'+c[0];return '<label class="f"><span>'+c[1]+'</span><input type="'+c[2]+'" id="t-'+it[0]+'-'+c[0]+'" data-target="'+k+'" value="'+esc(S.targets[k]||'')+'" placeholder="'+(c[0]==='goal'?it[3]:'')+'"></label>'}).join('')+'</div></div>';
+  });
+  h+='</div><div class="card"><h2>MEMO</h2><label class="f" for="memo"><span>병원에서 들은 말, 약 변경, 컨디션 등</span></label><textarea id="memo" rows="4" data-memo="1">'+esc(S.memo)+'</textarea></div>';
+  return h;
+}
+
+/* ---------- 바로보기 ---------- */
+function clean(s){return s.replace(/^· /,'')}
+function guideView(){
+  var t=TOPICS[gi],h='<div class="gtop"><button class="btn" type="button" data-act="drawer" aria-haspopup="dialog"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>목차</button><span class="note">'+(gi+1)+' / '+TOPICS.length+'</span></div>';
+  h+='<article class="g card"><div><div class="eb">수첩 p.'+t.page+'</div><h2>'+esc(clean(t.label))+'</h2></div><p class="lead">'+esc(t.lead||'')+'</p>';
+  (t.sections||[]).forEach(function(s){
+    h+='<section><h3>'+esc(s.h)+'</h3>';
+    if(s.items&&s.items.length)h+='<ul>'+s.items.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul>';
+    if(s.rows&&s.rows.length)h+='<div class="tbl gt"><table><thead><tr>'+s.rows[0].map(function(c){return '<th>'+esc(c)+'</th>'}).join('')+'</tr></thead><tbody>'+s.rows.slice(1).map(function(r){return '<tr>'+r.map(function(c){return '<td>'+esc(c)+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>';
+    if(s.note)h+='<div class="gnote">'+esc(s.note)+'</div>';
+    if(s.warn)h+='<div class="gwarn">'+esc(s.warn)+'</div>';
+    h+='</section>';
+  });
+  h+='<div class="pn"><button class="btn" type="button" data-go="'+(gi-1)+'"'+(gi===0?' disabled':'')+'>← '+(gi>0?esc(clean(TOPICS[gi-1].label)):'처음')+'</button><button class="btn pri" type="button" data-go="'+(gi+1)+'"'+(gi===TOPICS.length-1?' disabled':'')+'>'+(gi<TOPICS.length-1?esc(clean(TOPICS[gi+1].label)):'끝')+' →</button></div>';
+  h+='<p class="note">수첩 「혈당 바로!보기」 내용을 쉬운 말로 정리했어요. 치료 결정은 주치의와 상의하세요.</p></article>';
+  return h;
+}
+function openDrawer(){
+  var d=document.getElementById('drawer');
+  d.innerHTML='<div class="drawer" role="dialog" aria-modal="true" aria-label="바로보기 목차"><aside><div class="hd">목차 · 수첩 쪽수</div>'+TOPICS.map(function(t,i){return '<button type="button" class="topic'+(/^· /.test(t.label)?' sub':'')+'" data-pick="'+i+'"'+(i===gi?' aria-current="true"':'')+'>'+esc(clean(t.label))+'<span class="pg">p.'+t.page+'</span></button>'}).join('')+'</aside><button class="scrim" type="button" data-act="close" aria-label="목차 닫기"></button></div>';
+  d.hidden=false;var cur=d.querySelector('[aria-current="true"]')||d.querySelector('.topic');if(cur)cur.focus();
+}
+function closeDrawer(){var d=document.getElementById('drawer');d.hidden=true;d.innerHTML=''}
+
+/* ---------- 렌더 & 이벤트 ---------- */
+function render(){
+  var n=new Date();
+  document.getElementById('today').textContent=n.getFullYear()+'년 '+(n.getMonth()+1)+'월 '+n.getDate()+'일 ('+WD[n.getDay()]+') · 기록 '+S.logs.length+'일';
+  document.getElementById('view').innerHTML=tab==='home'?home():tab==='log'?logView():guideView();
+  document.querySelectorAll('nav.tabs a').forEach(function(a){if(a.dataset.tab===tab)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+}
+function go(t){tab=(t==='log'||t==='guide')?t:'home';closeDrawer();render();try{window.scrollTo(0,0)}catch(e){}}
+function route(){var h='';try{h=(location.hash||'').replace('#','')}catch(e){}go(h)}
+window.addEventListener('hashchange',route);
+document.addEventListener('click',function(e){var a=e.target.closest('nav.tabs a');if(!a)return;e.preventDefault();go(a.dataset.tab);try{history.replaceState(null,'','#'+a.dataset.tab)}catch(err){}},true);
+
+document.addEventListener('input',function(e){
+  var el=e.target;
+  if(el.dataset.draft){draft[el.dataset.draft]=el.value}
+  else if(el.dataset.meal){var t=today();var m=Object.assign({},S.meals[t]||{});m[el.dataset.meal]=el.value;S.meals[t]=m;save()}
+  else if(el.dataset.target){S.targets[el.dataset.target]=el.value;save()}
+  else if(el.dataset.memo){S.memo=el.value;save()}
+});
+document.addEventListener('change',function(e){
+  var el=e.target;
+  if(el.dataset.med!=null){var t=today(),a=(S.meds[t]||[false,false,false]).slice();a[+el.dataset.med]=el.checked;S.meds[t]=a;save();render()}
+});
+document.addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;
+  if(b.dataset.act==='add'){
+    if(!draft.date){msg='날짜를 넣어주세요.';render();return}
+    var any=Object.keys(draft).some(function(k){return k!=='date'&&draft[k]!==''});
+    if(!any){msg='값을 하나 이상 입력해 주세요.';render();return}
+    S.logs=S.logs.filter(function(l){return l.date!==draft.date});S.logs.push(Object.assign({},draft));sortLogs();save();
+    msg=md(draft.date)+' 기록을 저장했어요';draft=emptyDraft(draft.date);render();
+  } else if(b.dataset.act==='clear'){draft=emptyDraft(draft.date);msg='';render()}
+  else if(b.dataset.del){var d=b.dataset.del;S.logs=S.logs.filter(function(l){return l.date!==d});save();msg=md(d)+' 기록을 지웠어요';render()}
+  else if(b.dataset.act==='drawer'){openDrawer()}
+  else if(b.dataset.act==='close'){closeDrawer()}
+  else if(b.dataset.pick!=null){gi=+b.dataset.pick;closeDrawer();render();window.scrollTo(0,0)}
+  else if(b.dataset.go!=null){var g=+b.dataset.go;if(g>=0&&g<TOPICS.length){gi=g;render();window.scrollTo(0,0)}}
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!document.getElementById('drawer').hidden)closeDrawer()});
+route();
+})();
+</script>
+</body></html>
